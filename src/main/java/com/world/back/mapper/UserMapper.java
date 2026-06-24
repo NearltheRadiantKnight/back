@@ -19,7 +19,7 @@ public interface UserMapper
   @Insert("insert into user(id, pwd, role, real_name) values(#{id},#{password},#{role},#{realName})")
   Boolean createAdmin(String id, String realName, int role, String password);
 
-  @Insert("insert into user_inst_rel values(#{user_id}, #{inst_id})")
+  @Insert("insert ignore into user_inst_rel values(#{user_id}, #{inst_id})")
   Boolean createUserInstRel(String user_id, Integer inst_id);
 
   @Update("update user set real_name=#{realName},id=#{username},phone=#{phone},email=#{email} where id=#{username}")
@@ -43,8 +43,14 @@ public interface UserMapper
 
   @Delete("delete from user where id=#{id}")
   Boolean deleteUser(String id);
+  
   @Delete("delete from user_inst_rel where user_id = #{userId} and inst_id = #{instituteId}")
   Boolean deleteUserInstRel(@Param("userId") String userId, @Param("instituteId") Integer instituteId);
+  
+  // 删除用户的所有院系关联
+  @Delete("delete from user_inst_rel where user_id = #{userId}")
+  int deleteUserAllInstRels(@Param("userId") String userId);
+  
   @Delete("delete from user where id = #{username}")
   Boolean deleteUserById(@Param("username") String username);
 

@@ -29,4 +29,7 @@ public interface UserService
   Boolean deleteInstituteAdmin(String id);
   Boolean createUserInstRel(String userId, Integer instituteId);
   Boolean deleteUserInstRel(String userId, Integer instituteId);
+  
+  // 删除用户的所有院系关联
+  int deleteUserAllInstRels(String userId);
 }

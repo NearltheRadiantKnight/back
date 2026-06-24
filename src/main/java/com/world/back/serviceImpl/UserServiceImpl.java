@@ -318,13 +318,9 @@ public class UserServiceImpl implements UserService
   @Override
   public Boolean deleteUserInstRel(String userId, Integer instituteId) {
     try {
-      // 这个方法需要在UserMapper中实现
-      // 暂时注释掉
-      // return userMapper.deleteUserInstRel(userId, instituteId);
-      log.warn("deleteUserInstRel方法需要实现，userId: {}, instituteId: {}", userId, instituteId);
-      return true;
+      return userMapper.deleteUserInstRel(userId, instituteId);
     } catch (Exception e) {
-      log.error("删除用户院系关联失败", e);
+      log.error("删除用户院系关联失败，userId: {}, instituteId: {}", userId, instituteId, e);
       return false;
     }
   }
@@ -335,6 +331,16 @@ public class UserServiceImpl implements UserService
     } catch (Exception e) {
       log.error("创建用户院系关联失败，userId: {}, instituteId: {}", userId, instituteId, e);
       return false;
+    }
+  }
+  
+  @Override
+  public int deleteUserAllInstRels(String userId) {
+    try {
+      return userMapper.deleteUserAllInstRels(userId);
+    } catch (Exception e) {
+      log.error("删除用户所有院系关联失败，userId: {}", userId, e);
+      return 0;
     }
   }
 }

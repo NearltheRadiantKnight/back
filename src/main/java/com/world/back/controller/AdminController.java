@@ -56,18 +56,10 @@ public class AdminController {
             instituteAdmin.setId(username);
             instituteAdmin.setInstId(instituteId);  // 设置院系ID
 
-            // 创建用户
+            // 创建管理员用户（createAdmin内部已创建用户与院系关联）
             boolean userCreated = userService.createAdmin(instituteAdmin);
             if (!userCreated) {
                 return Result.error("创建用户失败");
-            }
-
-            // 创建用户与院系关联
-            boolean relationCreated = userService.createUserInstRel(username, instituteId);
-            if (!relationCreated) {
-                // 回滚：删除已创建的用户
-                userService.deleteInstituteAdmin(username);
-                return Result.error("创建关联失败");
             }
 
             // 更新院系的管理员字段
@@ -153,14 +145,10 @@ public class AdminController {
                 instituteService.updateInstitute(institute);
             }
 
-            // 删除用户与院系的关联
-            for (Institute institute : institutes) {
-                userService.deleteUserInstRel(id, institute.getId());
-            }
+            // 修复外键约束问题：先删除用户的所有院系关联
+            userService.deleteUserAllInstRels(id);
 
             // 删除用户
-            // 由于UserMapper的deleteUser方法需要int参数，我们需要调整
-            // 这里我们使用deleteUserById方法
             return Result.success(userService.deleteInstituteAdmin(id));
         } catch (Exception e) {
             return Result.error("删除失败: " + e.getMessage());
