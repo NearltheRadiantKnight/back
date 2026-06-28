@@ -2,6 +2,7 @@ package com.world.back.controller;
 
 import com.world.back.entity.Student;
 import com.world.back.entity.res.Result;
+import com.world.back.entity.res.StudentImportResult;
 import com.world.back.service.InstituteService;
 import com.world.back.service.StudentService;
 import com.world.back.service.UserService;
@@ -9,7 +10,10 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
+import jakarta.servlet.http.HttpServletResponse;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -178,6 +182,41 @@ public class StudentController {
     public Result<Boolean> setTitle(@RequestBody Map<String, Object> map)
     {
         return Result.success(studentService.setTitle(map));
+    }
+
+    /**
+     * 下载学生导入模板
+     * GET /students/import/template
+     */
+    @GetMapping("/import/template")
+    public void downloadImportTemplate(HttpServletResponse response) throws IOException {
+        studentService.downloadTemplate(response);
+    }
+
+    /**
+     * 批量导入学生（Excel）
+     * POST /students/import/excel
+     * 请求：multipart/form-data，参数：file（Excel文件）、institute_id（学院ID）
+     */
+    @PostMapping("/import/excel")
+    public Result<StudentImportResult> importStudentsFromExcel(
+            @RequestParam("file") MultipartFile file,
+            @RequestParam("institute_id") Integer instituteId) {
+        if (file.isEmpty()) {
+            return Result.error("上传文件不能为空");
+        }
+        try {
+            StudentImportResult result = studentService.importStudentsFromExcel(file, instituteId);
+            if (result.getFailureCount() > 0 && result.getSuccessCount() == 0) {
+                return Result.error(400, "导入全部失败", result);
+            } else if (result.getFailureCount() > 0) {
+                return Result.success("部分导入成功，存在" + result.getFailureCount() + "条失败数据", result);
+            } else {
+                return Result.success("全部导入成功", result);
+            }
+        } catch (Exception e) {
+            return Result.error("导入异常: " + e.getMessage());
+        }
     }
 
     /**

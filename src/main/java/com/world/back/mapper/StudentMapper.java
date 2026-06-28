@@ -26,6 +26,15 @@ public interface StudentMapper {
             "values(#{id}, #{realName}, #{tel}, #{email}, #{instituteId})")
     int insert(Student student);
 
+    // 批量插入学生
+    @Insert("<script>" +
+            "insert into student(id, real_name, tel, email, institute_id) values " +
+            "<foreach collection='list' item='item' separator=','>" +
+            "(#{item.id}, #{item.realName}, #{item.tel}, #{item.email}, #{item.instituteId})" +
+            "</foreach>" +
+            "</script>")
+    int batchInsert(@Param("list") List<Student> students);
+
     // 更新学生
     @Update({
             "<script>",
@@ -64,6 +73,10 @@ public interface StudentMapper {
     // 移除学生答辩小组分配
     @Delete("delete from dbinfo where stu_id = #{studentId}")
     int removeGroupAssignment(@Param("studentId") String studentId);
+
+    // 移除学生和教师关系
+    @Delete("delete from tea_stu_rel where stu_id = #{stu_id}")
+    void removeTesStuRel(@Param("stu_id") String studentId);
 
     // 获取学生所属答辩小组信息
     @Select("select g.*, u.real_name as admin_name from dbgroup g " +

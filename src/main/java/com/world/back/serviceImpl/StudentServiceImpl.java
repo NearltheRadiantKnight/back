@@ -1,16 +1,26 @@
 package com.world.back.serviceImpl;
 
 import com.world.back.entity.Student;
+import com.world.back.entity.dto.StudentImportDTO;
+import com.world.back.entity.res.StudentImportResult;
 import com.world.back.mapper.GroupMapper;
 import com.world.back.mapper.InstituteMapper;
 import com.world.back.mapper.StudentMapper;
 import com.world.back.service.StudentService;
+import com.world.back.utils.ExcelListener;
+import com.alibaba.excel.EasyExcel;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
+import jakarta.servlet.http.HttpServletResponse;
+import java.io.IOException;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -157,6 +167,9 @@ public class StudentServiceImpl implements StudentService {
             // 先删除关联的答辩信息
             studentMapper.removeGroupAssignment(id);
 
+            // 删除学生与老师的关联
+            studentMapper.removeTesStuRel(id);
+
             int result = studentMapper.deleteById(id);
             return result > 0;
         } catch (Exception e) {
@@ -206,6 +219,7 @@ public class StudentServiceImpl implements StudentService {
         return studentMapper.getTeacherById(student_id);
     }
     
+    
     @Override
     public Integer getGidBySid(String sid)
     {
@@ -229,7 +243,40 @@ public class StudentServiceImpl implements StudentService {
     {
         return studentMapper.getDbInfoById(id);
     }
-    
+
+    @Override
+    public void downloadTemplate(HttpServletResponse response) throws IOException {
+        response.setContentType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
+        String encodedFileName = URLEncoder.encode("学生信息导入模板.xlsx", StandardCharsets.UTF_8)
+                .replaceAll("\\+", "%20");
+        response.setHeader("Content-Disposition", "attachment; filename=" + encodedFileName);
+        EasyExcel.write(response.getOutputStream(), StudentImportDTO.class)
+                .sheet("学生信息")
+                .doWrite(new ArrayList<>());
+    }
+
+    @Override
+    public StudentImportResult importStudentsFromExcel(MultipartFile file, Integer instituteId) {
+        try {
+            ExcelListener listener = new ExcelListener(studentMapper, instituteId);
+            EasyExcel.read(file.getInputStream(), StudentImportDTO.class, listener)
+                    .sheet()
+                    .headRowNumber(1)
+                    .doRead();
+            return listener.getResult();
+        } catch (IOException e) {
+            log.error("解析Excel失败", e);
+            StudentImportResult errorResult = new StudentImportResult();
+            errorResult.addError(0, "文件读取失败: " + e.getMessage());
+            return errorResult;
+        } catch (Exception e) {
+            log.error("导入Excel失败", e);
+            StudentImportResult errorResult = new StudentImportResult();
+            errorResult.addError(0, "导入失败: " + e.getMessage());
+            return errorResult;
+        }
+    }
+
     @Override
     public Boolean setTitle(Map<String, Object> map)
     {

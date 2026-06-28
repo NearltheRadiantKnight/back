@@ -1,7 +1,11 @@
 package com.world.back.service;
 
 import com.world.back.entity.Student;
+import com.world.back.entity.res.StudentImportResult;
+import org.springframework.web.multipart.MultipartFile;
 
+import jakarta.servlet.http.HttpServletResponse;
+import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 
@@ -43,4 +47,14 @@ public interface StudentService {
     Map<String, Object> getDbInfoById(String id);
     
     Boolean setTitle(Map<String, Object> map);
+
+    /**
+     * 下载学生导入模板
+     */
+    void downloadTemplate(HttpServletResponse response) throws IOException;
+
+    /**
+     * 批量导入学生（Excel）
+     */
+    StudentImportResult importStudentsFromExcel(MultipartFile file, Integer instituteId);
 }
