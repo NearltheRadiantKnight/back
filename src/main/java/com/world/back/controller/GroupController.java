@@ -49,12 +49,21 @@ public class GroupController
     {
         try{
             Integer group_id = (Integer)map.get("id");
+            Object adminIdObj = map.get("admin_id") != null ? map.get("admin_id") : map.get("adminId");
+            Object maxStudentsObj = map.get("maxStudents") != null ? map.get("maxStudents") : map.get("max_student_count");
+            if (adminIdObj == null || adminIdObj.toString().isBlank()) {
+                return Result.error("请选择答辩组长");
+            }
+            if (maxStudentsObj == null) {
+                return Result.error("请设置最大学生数");
+            }
             Group group = new Group();
-            group.setAdmin_id(map.get("admin_id").toString());
+            group.setAdmin_id(adminIdObj.toString());
             group.setYear(Integer.parseInt(map.get("year").toString()));
-            group.setMax_student_count(Integer.parseInt(map.get("maxStudents").toString()));
-            if (group_id != null)
+            group.setMax_student_count(Integer.parseInt(maxStudentsObj.toString()));
+            if (group_id != null && group_id > 0)
             {
+                group.setId(group_id);
                 groupService.deleteAdmin(group_id);
                 groupService.updateGroup(group);
                 teacherService.addTeacherToGroup(group.getAdmin_id(), group_id, true);
