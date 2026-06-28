@@ -57,8 +57,7 @@ public class UserServiceImpl implements UserService
   @Override
   public Boolean updateAdmin(String realName, String username, String phone, String email)
   {
-    userMapper.updateAdmin(realName, username, phone, email);
-    return true;
+    return userMapper.updateAdmin(realName, username, phone, email) > 0;
   }
 
   @Override

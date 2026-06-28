@@ -164,6 +164,8 @@ public class StudentServiceImpl implements StudentService {
     @Transactional
     public boolean deleteStudent(String id) {
         try {
+            studentMapper.deleteGroupDefenseScores(id);
+            studentMapper.deleteTeacherStudentRelations(id);
             // 先删除关联的答辩信息
             studentMapper.removeGroupAssignment(id);
 

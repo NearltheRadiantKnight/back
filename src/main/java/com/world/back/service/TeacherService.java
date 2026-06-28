@@ -20,4 +20,5 @@ public interface TeacherService {
     boolean clearDefenseLeader(Integer groupId);
     List<Student> getGuidedStudents(String teacher_id, Integer year);
     Boolean addGuideStudent(String teacher_id, String student_id, Integer year);
+    Boolean deleteGuideStudent(String teacher_id, String student_id, Integer year);
 }

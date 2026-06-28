@@ -10,7 +10,16 @@ import java.util.Map;
 @Mapper
 public interface TemplateMapper {
 
-    @Select("SELECT * FROM template WHERE id = #{id}")
+    @Select("""
+            SELECT id, name, type, NULL AS description,
+                   file_path AS filePath,
+                   file_name AS fileName,
+                   file_size AS fileSize,
+                   updated_at AS updatedAt,
+                   updated_by AS updatedBy
+            FROM template
+            WHERE id = #{id}
+            """)
     Template selectById(Integer id);
 
     @Update("UPDATE template SET file_path = #{filePath}, file_name = #{fileName}, " +
@@ -18,15 +27,17 @@ public interface TemplateMapper {
             "WHERE id = #{id}")
     int updateById(Template template);
 
-    @Select("SELECT t.*, " +
-            "GROUP_CONCAT(pc.placeholder_key ORDER BY pc.placeholder_key) as placeholder_keys " +
+    @Select("SELECT t.id, t.name, t.type, NULL AS description, " +
+            "t.file_path AS filePath, t.file_name AS fileName, t.file_size AS fileSize, " +
+            "t.updated_at AS updatedAt, t.updated_by AS updatedBy, " +
+            "GROUP_CONCAT(pc.placeholder_key ORDER BY pc.placeholder_key) AS placeholderKeys " +
             "FROM template t " +
             "LEFT JOIN placeholder_config pc ON t.type = pc.template_type " +
             "GROUP BY t.id " +
             "ORDER BY t.type")
     @Results({
             @Result(property = "id", column = "id"),
-            @Result(property = "hasTemplate", column = "file_path",
+            @Result(property = "hasTemplate", column = "filePath",
                     javaType = Boolean.class,
                     one = @One(select = "com.world.back.mapper.TemplateMapper.hasTemplate"))
     })

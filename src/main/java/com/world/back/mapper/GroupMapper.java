@@ -28,10 +28,12 @@ public interface GroupMapper
     void createGroup(Group group);
     
     @Select("select id from dbgroup where year=#{year} and admin_id=#{admin_id}")
-    Integer getGidByYearId(Integer year, String admin_id);
+    Integer getGidByYearId(@Param("year") Integer year, @Param("admin_id") String admin_id);
 
     @Update("update dbgroup set admin_id=#{admin_id},max_student_count=#{max_student_count} where id=#{id}")
-    void updateGroup(Integer id, String admin_id, int max_student_count);
+    int updateGroup(@Param("id") Integer id,
+                    @Param("admin_id") String admin_id,
+                    @Param("max_student_count") int max_student_count);
 
     @Delete("delete from dbinfo where gid=#{id}")
     void deleteGroupInfo(Integer id);
@@ -52,5 +54,5 @@ public interface GroupMapper
     List<Map<String, Object>> getMember(Integer id);
     
     @Delete("delete from dbinfo where gid=#{group_id} and stu_id=#{student_id}")
-    void deleteFromGroup(Integer group_id, String student_id);
+    void deleteFromGroup(@Param("group_id") Integer group_id, @Param("student_id") String student_id);
 }

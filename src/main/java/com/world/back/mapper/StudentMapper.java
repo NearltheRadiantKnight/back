@@ -19,7 +19,9 @@ public interface StudentMapper {
     );
     
     @Select("select * from student where institute_id=#{instituteId} limit #{pagesize} offset #{offset}")
-    List<Map<String, Object>> findListByInstitutePage(Integer instituteId, Integer offset, Integer pagesize);
+    List<Map<String, Object>> findListByInstitutePage(@Param("instituteId") Integer instituteId,
+                                                      @Param("offset") Integer offset,
+                                                      @Param("pagesize") Integer pagesize);
 
     // 插入学生
     @Insert("insert into student(id, real_name, tel, email, institute_id) " +
@@ -52,10 +54,18 @@ public interface StudentMapper {
     @Delete("delete from student where id = #{id}")
     int deleteById(@Param("id") String id);
 
+    @Delete("delete from tea_stu_rel where stu_id = #{studentId}")
+    int deleteTeacherStudentRelations(@Param("studentId") String studentId);
+
+    @Delete("delete from group_defense where stu_id = #{studentId}")
+    int deleteGroupDefenseScores(@Param("studentId") String studentId);
+
     // 分配答辩小组（通过dbinfo表关联）
     @Insert("insert into dbinfo(gid, stu_id, type) values(#{groupId}, #{studentId}, #{type}) " +
             "on duplicate key update gid = #{groupId}")
-    int assignGroup(@Param("studentId") String studentId, @Param("groupId") Integer groupId, Integer type);
+    int assignGroup(@Param("studentId") String studentId,
+                    @Param("groupId") Integer groupId,
+                    @Param("type") Integer type);
 
     // 检查学号是否存在
     @Select("select count(*) from student where id = #{studentId}")
@@ -108,8 +118,13 @@ public interface StudentMapper {
     Integer getUnassignCount(Integer instituteId);
     
     @Update("update dbinfo set title=#{title}, summary=#{summary}, type=#{type} where stu_id=#{student_id}")
-    void setTitle(String student_id, String title, String summary, Integer type);
+    void setTitle(@Param("student_id") String student_id,
+                  @Param("title") String title,
+                  @Param("summary") String summary,
+                  @Param("type") Integer type);
     
     @Update("update dbinfo set comment=#{comment} where gid=#{gid} and stu_id=#{stu_id}")
-    void saveComment(Integer gid, String stu_id,  String comment);
+    void saveComment(@Param("gid") Integer gid,
+                     @Param("stu_id") String stu_id,
+                     @Param("comment") String comment);
 }

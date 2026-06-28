@@ -174,6 +174,12 @@ public class TeacherServiceImpl implements TeacherService {
         teacherMapper.addGuideStudent(teacher_id, student_id, year);
         return true;
     }
+
+    @Override
+    public Boolean deleteGuideStudent(String teacher_id, String student_id, Integer year)
+    {
+        return teacherMapper.deleteGuideStudent(teacher_id, student_id, year) > 0;
+    }
     
     @Override
     public Long getTeacherCount(Integer instituteId) {

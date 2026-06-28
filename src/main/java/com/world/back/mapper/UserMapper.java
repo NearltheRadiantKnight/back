@@ -22,8 +22,11 @@ public interface UserMapper
   @Insert("insert ignore into user_inst_rel values(#{user_id}, #{inst_id})")
   Boolean createUserInstRel(String user_id, Integer inst_id);
 
-  @Update("update user set real_name=#{realName},id=#{username},phone=#{phone},email=#{email} where id=#{username}")
-  void updateAdmin(String realName, String username, String phone, String email);
+  @Update("update user set real_name=#{realName}, phone=#{phone}, email=#{email} where id=#{username} and role=1")
+  int updateAdmin(@Param("realName") String realName,
+                  @Param("username") String username,
+                  @Param("phone") String phone,
+                  @Param("email") String email);
 
   @Delete("delete from user_inst_rel where inst_id=#{inst_id}")
   Boolean deleteUserInstRelByInstId(Integer inst_id);
