@@ -202,6 +202,19 @@ public class TeacherController {
   }
 
   // 获取可用年份
+  @PostMapping("/deleteguidestudent")
+  public Result<Boolean> deleteGuideStudent(@RequestBody Map<String, Object> map)
+  {
+    String teacher_id = (String) map.get("teacher_id");
+    String student_id = (String) map.get("student_id");
+    Integer year = (Integer) map.get("year");
+    if (teacherService.deleteGuideStudent(teacher_id, student_id, year))
+    {
+      return Result.success(true);
+    }
+    return Result.error("删除失败，未找到对应的指导关系");
+  }
+
   @GetMapping("/years")
   public ResponseEntity<?> getYears() {
     try {

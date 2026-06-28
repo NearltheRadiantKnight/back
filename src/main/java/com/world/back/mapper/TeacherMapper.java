@@ -208,4 +208,7 @@ public interface TeacherMapper {
     
     @Insert("insert into tea_stu_rel values(#{teacher_id}, #{student_id}, #{year})")
     void addGuideStudent(String teacher_id, String student_id, Integer year);
+
+    @Delete("delete from tea_stu_rel where tea_id=#{teacher_id} and stu_id=#{student_id} and year=#{year}")
+    int deleteGuideStudent(String teacher_id, String student_id, Integer year);
 }
