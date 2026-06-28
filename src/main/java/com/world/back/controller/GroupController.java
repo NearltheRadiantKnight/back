@@ -30,9 +30,13 @@ public class GroupController
     @Autowired
     private StudentService studentService;
     @GetMapping("/all")
-    public Result<List<Map<String, Object>>> getAllGroups(@RequestParam Integer year)
+    public Result<List<Map<String, Object>>> getAllGroups(
+            @RequestParam Integer year,
+            @RequestParam(value = "institute_id", required = false) Integer instituteId)
     {
-        List<Map<String, Object>> res = groupService.getAllGroups(year);
+        List<Map<String, Object>> res = (instituteId != null && instituteId > 0)
+                ? groupService.getAllGroupsByInstitute(year, instituteId)
+                : groupService.getAllGroups(year);
         for (Map<String, Object> map : res) {
             map.put("realName", userService.getNameById((String)map.get("admin_id")));
             map.put("student_count", groupService.getMember((Integer)map.get("id")).size());

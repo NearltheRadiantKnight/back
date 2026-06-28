@@ -23,8 +23,29 @@ public interface DefenseMapper
     @Select("select count(1) from dbgroup where year=#{year} and admin_id!='admin'")
     Integer getCountByYear(Integer year);
 
+    @Select("""
+            select count(distinct g.id)
+            from dbgroup g
+            join user_inst_rel uir on g.admin_id = uir.user_id
+            where g.year = #{year}
+              and g.admin_id != 'admin'
+              and uir.inst_id = #{instituteId}
+            """)
+    Integer getCountByYearAndInstitute(@Param("year") Integer year, @Param("instituteId") Integer instituteId);
+
     @Select("select count(1) from dbgroup inner join dbinfo on id=gid where year=#{year} and admin_id!='admin'")
     Integer getStudentCountByYear(Integer year);
+
+    @Select("""
+            select count(distinct d.stu_id)
+            from dbgroup g
+            join dbinfo d on g.id = d.gid
+            join student s on d.stu_id = s.id
+            where g.year = #{year}
+              and g.admin_id != 'admin'
+              and s.institute_id = #{instituteId}
+            """)
+    Integer getStudentCountByYearAndInstitute(@Param("year") Integer year, @Param("instituteId") Integer instituteId);
 
     @Select("select * from student where institute_id=#{instituteId}")
     List<Student> getStudentByInstituteId(Integer instituteId);

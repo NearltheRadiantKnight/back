@@ -13,6 +13,16 @@ public interface GroupMapper
     @Select("select * from dbgroup where admin_id!='admin' and (year=#{year} or #{year}=0)")
     List<Map<String, Object>> getAllGroups(Integer year);
 
+    @Select("""
+            select distinct g.*
+            from dbgroup g
+            join user_inst_rel uir on g.admin_id = uir.user_id
+            where g.admin_id != 'admin'
+              and (g.year = #{year} or #{year} = 0)
+              and uir.inst_id = #{instituteId}
+            """)
+    List<Map<String, Object>> getAllGroupsByInstitute(@Param("year") Integer year, @Param("instituteId") Integer instituteId);
+
     @Insert("insert into dbgroup(admin_id, year, max_student_count) values(#{admin_id},#{year},#{max_student_count})")
     @Options(useGeneratedKeys = true, keyProperty = "id", keyColumn = "id")
     void createGroup(Group group);
@@ -36,7 +46,7 @@ public interface GroupMapper
     void deleteGroup(Integer id);
 
     @Select("select max_student_count from dbgroup where id=#{gid}")
-    int getMaxStudentCountByGid(Integer gid);
+    Integer getMaxStudentCountByGid(Integer gid);
     
     @Select("select * from dbinfo where gid=#{id}")
     List<Map<String, Object>> getMember(Integer id);

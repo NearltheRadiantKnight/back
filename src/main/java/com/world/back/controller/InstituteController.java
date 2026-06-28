@@ -75,6 +75,20 @@ public class InstituteController {
         }
     }
 
+    @PostMapping("/delete")
+    public Result<Boolean> deleteInstitute(@RequestBody Map<String, Object> map) {
+        try {
+            Integer id = Integer.parseInt(map.get("id").toString());
+            Boolean deleted = instituteService.deleteInstitute(id);
+            if (deleted) {
+                return Result.success(true);
+            }
+            return Result.error("删除失败，请先确认该院系下没有学生等关联数据");
+        } catch (Exception e) {
+            return Result.error("删除失败: " + e.getMessage());
+        }
+    }
+
     @GetMapping("/admin/{adminId}/institutes")
     public Result<List<Institute>> getInstitutesByAdminId(@PathVariable String adminId) {
         try {

@@ -7,6 +7,8 @@ import com.world.back.service.InstituteService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.interceptor.TransactionAspectSupport;
 
 import java.util.List;
 
@@ -60,12 +62,15 @@ public class InstituteServiceImpl implements InstituteService
   }
 
   @Override
+  @Transactional
   public Boolean deleteInstitute(Integer id)
   {
     try {
+      userMapper.deleteUserInstRelByInstId(id);
       instituteMapper.deleteInstitute(id);
       return true;
     } catch (Exception e) {
+      TransactionAspectSupport.currentTransactionStatus().setRollbackOnly();
       log.error("删除院系失败", e);
       return false;
     }

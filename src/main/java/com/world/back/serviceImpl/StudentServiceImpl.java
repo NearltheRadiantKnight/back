@@ -169,7 +169,8 @@ public class StudentServiceImpl implements StudentService {
     @Transactional
     public boolean assignGroup(String studentId, Integer groupId, Integer type) {
         try {
-            if (groupMapper.getMember(groupId).size() == groupMapper.getMaxStudentCountByGid(groupId))
+            Integer maxStudentCount = groupMapper.getMaxStudentCountByGid(groupId);
+            if (maxStudentCount != null && maxStudentCount > 0 && groupMapper.getMember(groupId).size() >= maxStudentCount)
             {
                 return false;
             }

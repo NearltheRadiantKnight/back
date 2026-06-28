@@ -25,6 +25,12 @@ public class GroupServiceImpl implements GroupService
     }
 
     @Override
+    public List<Map<String, Object>> getAllGroupsByInstitute(Integer year, Integer instituteId)
+    {
+        return groupMapper.getAllGroupsByInstitute(year, instituteId);
+    }
+
+    @Override
     public Boolean createGroup(Group group) throws RuntimeException
     {
         if (groupMapper.getGidByYearId(group.getYear(), group.getAdmin_id()) != null)
@@ -57,7 +63,7 @@ public class GroupServiceImpl implements GroupService
     
 
     @Override
-    public int getMaxStudentCountByGid(Integer group_id)
+    public Integer getMaxStudentCountByGid(Integer group_id)
     {
         return groupMapper.getMaxStudentCountByGid(group_id);
     }

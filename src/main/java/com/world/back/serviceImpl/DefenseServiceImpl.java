@@ -2,8 +2,10 @@ package com.world.back.serviceImpl;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.world.back.entity.Coefficient;
+import com.world.back.entity.Institute;
 import com.world.back.entity.TeacherScore;
 import com.world.back.mapper.DefenseMapper;
+import com.world.back.mapper.InstituteMapper;
 import com.world.back.mapper.TeacherMapper;
 import com.world.back.service.DefenseService;
 import com.world.back.service.GroupService;
@@ -19,6 +21,8 @@ public class DefenseServiceImpl implements DefenseService
 {
     @Autowired
     private DefenseMapper defenseMapper;
+    @Autowired
+    private InstituteMapper instituteMapper;
     @Autowired
     private GroupService groupService;
     @Autowired
@@ -48,15 +52,62 @@ public class DefenseServiceImpl implements DefenseService
     }
 
     @Override
+    public List<Map<String, Object>> yearInstituteSummary()
+    {
+        List<Map<String, Object>> years = defenseMapper.yearAll();
+        List<Institute> institutes = instituteMapper.getAll();
+
+        for (Map<String, Object> yearMap : years) {
+            Integer year = toInteger(yearMap.get("year"));
+            yearMap.put("groupCount", getCountByYear(year));
+            yearMap.put("defenseCount", getStudentCountByYear(year));
+
+            List<Map<String, Object>> instituteStats = new ArrayList<>();
+            for (Institute institute : institutes) {
+                Map<String, Object> instituteMap = new HashMap<>();
+                instituteMap.put("id", institute.getId());
+                instituteMap.put("name", institute.getName());
+                instituteMap.put("adminId", institute.getAdminId());
+                instituteMap.put("groupCount", getCountByYearAndInstitute(year, institute.getId()));
+                instituteMap.put("defenseCount", getStudentCountByYearAndInstitute(year, institute.getId()));
+                instituteStats.add(instituteMap);
+            }
+            yearMap.put("institutes", instituteStats);
+        }
+
+        return years;
+    }
+
+    private Integer toInteger(Object value)
+    {
+        if (value instanceof Number number) {
+            return number.intValue();
+        }
+        return Integer.parseInt(value.toString());
+    }
+
+    @Override
     public Integer getCountByYear(Integer year)
     {
         return defenseMapper.getCountByYear(year);
     }
 
     @Override
+    public Integer getCountByYearAndInstitute(Integer year, Integer instituteId)
+    {
+        return defenseMapper.getCountByYearAndInstitute(year, instituteId);
+    }
+
+    @Override
     public Integer getStudentCountByYear(Integer year)
     {
         return defenseMapper.getStudentCountByYear(year);
+    }
+
+    @Override
+    public Integer getStudentCountByYearAndInstitute(Integer year, Integer instituteId)
+    {
+        return defenseMapper.getStudentCountByYearAndInstitute(year, instituteId);
     }
 
     public Boolean saveScore(Map<String, Object> map) {

@@ -12,6 +12,8 @@ public interface GroupService
 {
     List<Map<String, Object>> getAllGroups(Integer year);
 
+    List<Map<String, Object>> getAllGroupsByInstitute(Integer year, Integer instituteId);
+
     Boolean createGroup(Group group);
 
     void updateGroup(Group group);
@@ -20,7 +22,7 @@ public interface GroupService
 
     void deleteAdmin(Integer gid);
 
-    int getMaxStudentCountByGid(Integer group_id);
+    Integer getMaxStudentCountByGid(Integer group_id);
     
     List<Map<String, Object>> getMember(Integer group_id);
     

@@ -1,394 +1,378 @@
-use manager;
+-- MySQL dump 10.13  Distrib 8.0.42, for Win64 (x86_64)
+--
+-- Host: localhost    Database: manager
+-- ------------------------------------------------------
+-- Server version	8.0.42
 
-drop table if exists tea_group_rel;
-drop table if exists dbinfo;
-drop table if exists group_defense;
-drop table if exists dbgroup;
-drop table if exists tea_stu_rel;
-drop table if exists user_inst_rel;
-drop table if exists student;
-drop table if exists institute;
-drop table if exists user;
-drop table if exists template;
-drop table if exists date_config;
-drop table if exists placeholder_config;
+/*!40101 SET @OLD_CHARACTER_SET_CLIENT=@@CHARACTER_SET_CLIENT */;
+/*!40101 SET @OLD_CHARACTER_SET_RESULTS=@@CHARACTER_SET_RESULTS */;
+/*!40101 SET @OLD_COLLATION_CONNECTION=@@COLLATION_CONNECTION */;
+/*!50503 SET NAMES utf8mb4 */;
+/*!40103 SET @OLD_TIME_ZONE=@@TIME_ZONE */;
+/*!40103 SET TIME_ZONE='+00:00' */;
+/*!40014 SET @OLD_UNIQUE_CHECKS=@@UNIQUE_CHECKS, UNIQUE_CHECKS=0 */;
+/*!40014 SET @OLD_FOREIGN_KEY_CHECKS=@@FOREIGN_KEY_CHECKS, FOREIGN_KEY_CHECKS=0 */;
+/*!40101 SET @OLD_SQL_MODE=@@SQL_MODE, SQL_MODE='NO_AUTO_VALUE_ON_ZERO' */;
+/*!40111 SET @OLD_SQL_NOTES=@@SQL_NOTES, SQL_NOTES=0 */;
 
-create table user(
-                     id char(10) not null comment '用户id',
-                     pwd varchar(30) not null comment '密码',
-                     role int not null comment '角色标识',
-    -- 0-2,admin,instAdmin,defenseLeader/teacher,
-                     real_name varchar(20) not null comment '真实姓名',
-                     phone char(11) null comment '联系电话',
-                     email varchar(32) null comment '邮箱',
-                     signaturePath varchar(100) null comment '签名路径',
-                     primary key (id)
-) comment='用户表';
+--
+-- Table structure for table `date_config`
+--
 
-create table institute(
-                          id int not null auto_increment comment '院系id',
-                          name varchar(20) not null comment '院系名称',
-                          user_id char(10) comment '管理员id',
-                          primary key (id),
-                          unique key uk_institute(name)
-) comment='院系表';
+DROP TABLE IF EXISTS `date_config`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `date_config` (
+  `id` int NOT NULL AUTO_INCREMENT,
+  `config_key` varchar(50) NOT NULL,
+  `config_value` date NOT NULL,
+  `updated_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `uk_config_key` (`config_key`)
+) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
 
-create table user_inst_rel(
-                              user_id char(10) comment '用户id',
-                              inst_id int comment '院系id',
-                              foreign key uk_user_id(user_id) references user(id),
-                              foreign key uk_inst_id(inst_id) references institute(id)
-) comment='用户所属院系';
+--
+-- Dumping data for table `date_config`
+--
 
-create table student(
-                        id char(10) not null comment '学号',
-                        real_name varchar(20) not null comment '姓名',
-                        tel char(11) comment '电话号码',
-                        email varchar(20) comment '邮箱',
-                        institute_id int not null comment '所属院系id',
-                        foreign key fk_institute_id(institute_id) references institute(id),
-                        primary key (id)
-) comment='学生基本信息';
+LOCK TABLES `date_config` WRITE;
+/*!40000 ALTER TABLE `date_config` DISABLE KEYS */;
+INSERT INTO `date_config` VALUES (1,'defense_date','2026-01-05','2026-01-05 12:36:43'),(2,'evaluation_date','2026-01-05','2026-01-05 12:36:43');
+/*!40000 ALTER TABLE `date_config` ENABLE KEYS */;
+UNLOCK TABLES;
 
-create table tea_stu_rel(
-                            tea_id char(10) comment '老师id',
-                            stu_id char(10) comment '学生id',
-                            year int comment '指导年份',
-                            unique key(tea_id, stu_id),
-                            foreign key fk_tea_id(tea_id) references user(id),
-                            foreign key fk_stu_id(stu_id) references student(id)
-) comment='老师指导学生信息';
+--
+-- Table structure for table `dbgroup`
+--
 
-create table dbgroup(
-                        id int auto_increment comment '编号',
-                        year int comment '答辩年份',
-                        admin_id char(10) comment '答辩组长',
-                        max_student_count int comment '最大学生数量',
-                        adjustmentCoefficient double null comment '调节系数',
-                        primary key (id),
-                        foreign key fk_user_id(admin_id) references user(id)
-) comment='答辩组';
+DROP TABLE IF EXISTS `dbgroup`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `dbgroup` (
+  `id` int NOT NULL AUTO_INCREMENT,
+  `year` int DEFAULT NULL,
+  `admin_id` char(10) DEFAULT NULL,
+  `max_student_count` int DEFAULT NULL,
+  `adjustmentCoefficient` double DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  KEY `fk_user_id` (`admin_id`),
+  CONSTRAINT `dbgroup_ibfk_1` FOREIGN KEY (`admin_id`) REFERENCES `user` (`id`)
+) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
 
-create table dbinfo(
-                       gid int comment '答辩组号',
-                       stu_id char(10) comment '学生编号',
-                       type int comment '毕业考核类型',
-                       title varchar(128) comment '毕业考核题目',
-                       time date comment '答辩日期',
-                       summary varchar(255) comment '毕业考核摘要',
-                       reviewer_id char(10) comment '评阅人id',
-                       total_score int default 0 comment '总分',
-                       comment text comment '答辩小组评语',
-                       graded_by varchar(10) comment '评分人id',
-                       teacher_scores json comment '其他教师评分(json格式存储)',
-                       foreign key (reviewer_id) references user(id),
-                       foreign key (gid) references dbgroup(id),
-                       foreign key (stu_id) references student(id),
-                       unique key uk_stu_gid (stu_id, gid)
-) comment='学生答辩信息';
+--
+-- Dumping data for table `dbgroup`
+--
 
--- 添加教师与小组的关联表
-create table tea_group_rel (
-                               id int auto_increment primary key,
-                               teacher_id char(10) not null comment '教师ID',
-                               group_id int not null comment '小组ID',
-                               is_defense_leader boolean default false comment '是否为组长',
-                               foreign key (teacher_id) references user(id),
-                               foreign key (group_id) references dbgroup(id),
-                               unique key uk_teacher_group (teacher_id, group_id)
-) comment='教师与答辩小组关联表';
+LOCK TABLES `dbgroup` WRITE;
+/*!40000 ALTER TABLE `dbgroup` DISABLE KEYS */;
+INSERT INTO `dbgroup` VALUES (1,2026,'100001',NULL,NULL);
+/*!40000 ALTER TABLE `dbgroup` ENABLE KEYS */;
+UNLOCK TABLES;
 
-create table group_defense(
-                              group_id int not null comment '答辩组号',
-                              stu_id char(10) not null comment '学生编号',
-                              major_score int null comment '大组答辩成绩',
-                              primary key (group_id, stu_id),
-                              foreign key (group_id) references dbgroup(id),
-                              foreign key (stu_id) references student(id)
-) comment='大组答辩表';
--- 添加索引
-create index idx_user_id on user(id);
-create index idx_student_id on student(id);
+--
+-- Table structure for table `dbinfo`
+--
 
-insert into user (id, pwd, role, real_name) values
-                                                ('admin', '123456', 0, 'jj1'),
-                                                ('inst', '123456', 1, 'jj2'),
-                                                ('123123', '123456', 2, 'jj3'),
-                                                ('123456', '123456', 2, 'jj4');
+DROP TABLE IF EXISTS `dbinfo`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `dbinfo` (
+  `gid` int DEFAULT NULL,
+  `stu_id` char(10) DEFAULT NULL,
+  `type` int DEFAULT NULL,
+  `title` varchar(128) DEFAULT NULL,
+  `time` date DEFAULT NULL,
+  `summary` varchar(255) DEFAULT NULL,
+  `reviewer_id` char(10) DEFAULT NULL,
+  `total_score` int DEFAULT '0',
+  `comment` text,
+  `graded_by` varchar(10) DEFAULT NULL,
+  `teacher_scores` json DEFAULT NULL,
+  UNIQUE KEY `uk_stu_gid` (`stu_id`,`gid`),
+  KEY `reviewer_id` (`reviewer_id`),
+  KEY `gid` (`gid`),
+  CONSTRAINT `dbinfo_ibfk_1` FOREIGN KEY (`reviewer_id`) REFERENCES `user` (`id`),
+  CONSTRAINT `dbinfo_ibfk_2` FOREIGN KEY (`gid`) REFERENCES `dbgroup` (`id`),
+  CONSTRAINT `dbinfo_ibfk_3` FOREIGN KEY (`stu_id`) REFERENCES `student` (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
 
-insert into institute (name) values
-    ('计算机与信息学院');
+--
+-- Dumping data for table `dbinfo`
+--
 
-insert into student (id, real_name, tel, email, institute_id) values
-                                                                  ('2023001', 'wxy', '13800138001', 'wxy@email.com',1),
-                                                                  ('2023002', 'lwx', '13800138002', 'lwx@email.com',1),
-                                                                  ('2023003', 'zzh', '13800138003', 'zzh@email.com',1);
+LOCK TABLES `dbinfo` WRITE;
+/*!40000 ALTER TABLE `dbinfo` DISABLE KEYS */;
+INSERT INTO `dbinfo` VALUES (1,'2023001',1,'鍩轰簬springboot鐨勫湪绾挎暀鑲插钩鍙拌璁′笌瀹炵幇','2023-05-20','鏈瘯涓氳璁″熀浜巗pringboot妗嗘灦寮€鍙戜簡涓€涓湪绾挎暀鑲插钩鍙帮紝瀹炵幇浜嗚绋嬬鐞嗐€佸湪绾垮涔犮€佽€冭瘯绯荤粺绛夊姛鑳姐€?,'100002',86,NULL,'100001','[{\"design_qa1\": 13, \"design_qa2\": 13, \"teacher_id\": \"100002\", \"total_score\": 86, \"teacher_name\": \"鏉庤€佸笀\", \"design_quality1\": 13, \"design_quality2\": 13, \"design_quality3\": 13, \"design_presentation\": 22}, {\"design_qa1\": 13, \"design_qa2\": 13, \"teacher_id\": \"100003\", \"total_score\": 89, \"teacher_name\": \"鐜嬭€佸笀\", \"design_quality1\": 14, \"design_quality2\": 14, \"design_quality3\": 13, \"design_presentation\": 22}, {\"design_qa1\": 12, \"design_qa2\": 12, \"teacher_id\": \"100004\", \"total_score\": 84, \"teacher_name\": \"璧佃€佸笀\", \"design_quality1\": 13, \"design_quality2\": 13, \"design_quality3\": 12, \"design_presentation\": 22}]'),(1,'2023002',2,'浜哄伐鏅鸿兘鍦ㄦ櫤鑳藉鏈嶇郴缁熶腑鐨勫叧閿妧鏈爺绌朵笌搴旂敤','2023-05-20','鏈瘯涓氳鏂囩爺绌朵簡浜哄伐鏅鸿兘鎶€鏈湪鏅鸿兘瀹㈡湇绯荤粺涓殑搴旂敤锛岄噸鐐规帰璁ㄤ簡鑷劧璇█澶勭悊鍜屾満鍣ㄥ涔犵畻娉曘€?,'100002',98,NULL,'100001','[{\"teacher_id\": \"100002\", \"total_score\": 100, \"presentation\": 25, \"teacher_name\": \"鏉庤€佸笀\", \"paper_quality\": 45, \"qa_performance\": 30}, {\"teacher_id\": \"100003\", \"total_score\": 100, \"presentation\": 28, \"teacher_name\": \"鐜嬭€佸笀\", \"paper_quality\": 43, \"qa_performance\": 29}, {\"teacher_id\": \"100004\", \"total_score\": 93, \"presentation\": 25, \"teacher_name\": \"璧佃€佸笀\", \"paper_quality\": 40, \"qa_performance\": 28}]');
+/*!40000 ALTER TABLE `dbinfo` ENABLE KEYS */;
+UNLOCK TABLES;
 
-insert into user (id, pwd, role, real_name, phone, email) values
-                                                              ('100001', '123456', 2, '张老师', '13800138001', 'zhang@example.com'),
-                                                              ('100002', '123456', 2, '李老师', '13800138002', 'li@example.com'),
-                                                              ('100003', '123456', 2, '王老师', '13800138003', 'wang@example.com'),
-                                                              ('100004', '123456', 2, '赵老师', '13800138004', 'zhao@example.com');
+--
+-- Table structure for table `group_defense`
+--
 
-insert into tea_stu_rel (tea_id, stu_id, year) values
-                                                   ('100001', '2023001', 2026),
-                                                   ('100001', '2023002', 2026);
+DROP TABLE IF EXISTS `group_defense`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `group_defense` (
+  `group_id` int NOT NULL,
+  `stu_id` char(10) NOT NULL,
+  `major_score` int DEFAULT NULL,
+  PRIMARY KEY (`group_id`,`stu_id`),
+  KEY `stu_id` (`stu_id`),
+  CONSTRAINT `group_defense_ibfk_1` FOREIGN KEY (`group_id`) REFERENCES `dbgroup` (`id`),
+  CONSTRAINT `group_defense_ibfk_2` FOREIGN KEY (`stu_id`) REFERENCES `student` (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
 
-insert into user_inst_rel(user_id, inst_id) values
-    ('inst',1);
+--
+-- Dumping data for table `group_defense`
+--
 
-insert into user_inst_rel (user_id, inst_id) values
-                                                 ('100001', 1),
-                                                 ('100002', 1),
-                                                 ('100003', 1),
-                                                 ('100004', 1);
+LOCK TABLES `group_defense` WRITE;
+/*!40000 ALTER TABLE `group_defense` DISABLE KEYS */;
+/*!40000 ALTER TABLE `group_defense` ENABLE KEYS */;
+UNLOCK TABLES;
 
--- 插入多个年份的小组数据
-insert into dbgroup (admin_id, year) values('100001', 2026);
+--
+-- Table structure for table `institute`
+--
 
-insert into tea_group_rel (teacher_id, group_id, is_defense_leader) values
-                                                                        ('100001', 1, true),   -- 张老师是第1组组长
-                                                                        ('100002', 1, false),  -- 李老师是第1组成员
-                                                                        ('100003', 1, false),
-                                                                        ('100004', 1, false);
+DROP TABLE IF EXISTS `institute`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `institute` (
+  `id` int NOT NULL AUTO_INCREMENT,
+  `name` varchar(20) NOT NULL,
+  `user_id` char(10) DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `uk_institute` (`name`)
+) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
 
+--
+-- Dumping data for table `institute`
+--
 
--- 1. 模板表
-create table template (
-                          id int auto_increment primary key comment '模板id',
-                          name varchar(100) not null comment '模板名称',
-                          type int not null comment '模板类型：1-本科毕业设计答辩成绩表, 2-本科毕业设计成绩评定表, 3-本科毕业论文答辩成绩表, 4-本科毕业论文成绩评定表, 5-毕业论文(设计)答辩小组统分表, 6-毕业论文答辩成绩无评语过程表, 7-毕业设计答辩成绩无评语过程表',
-                          file_path varchar(500) not null comment '文件存储路径',
-                          file_name varchar(255) not null comment '原始文件名',
-                          file_size bigint comment '文件大小',
-                          updated_at timestamp default current_timestamp on update current_timestamp comment '更新时间',
-                          updated_by varchar(50) comment '最后更新人',
-                          unique key uk_template_type (type)
-) comment='文档模板表';
+LOCK TABLES `institute` WRITE;
+/*!40000 ALTER TABLE `institute` DISABLE KEYS */;
+INSERT INTO `institute` VALUES (1,'璁＄畻鏈轰笌淇℃伅瀛﹂櫌','inst'),(2,'鍦熸湪',NULL);
+/*!40000 ALTER TABLE `institute` ENABLE KEYS */;
+UNLOCK TABLES;
 
--- 2. 日期配置表
-create table date_config (
-                             id int auto_increment primary key,
-                             config_key varchar(50) not null comment '配置键：defense_date/evaluation_date',
-                             config_value date not null comment '日期值',
-                             updated_at timestamp default current_timestamp on update current_timestamp comment '更新时间',
-                             unique key uk_config_key (config_key)
-) comment='日期配置表';
+--
+-- Table structure for table `placeholder_config`
+--
 
--- 3. 占位符配置表（用于验证）
-create table placeholder_config (
-                                    id int auto_increment primary key,
-                                    template_type int not null comment '模板类型',
-                                    placeholder_key varchar(100) not null comment '占位符键名',
-                                    placeholder_name varchar(100) not null comment '占位符显示名称',
-                                    is_required boolean default true comment '是否必需',
-                                    unique key uk_type_placeholder (template_type, placeholder_key)
-) comment='模板占位符配置表';
+DROP TABLE IF EXISTS `placeholder_config`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `placeholder_config` (
+  `id` int NOT NULL AUTO_INCREMENT,
+  `template_type` int NOT NULL,
+  `placeholder_key` varchar(100) NOT NULL,
+  `placeholder_name` varchar(100) NOT NULL,
+  `is_required` tinyint(1) DEFAULT '1',
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `uk_type_placeholder` (`template_type`,`placeholder_key`)
+) ENGINE=InnoDB AUTO_INCREMENT=88 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
 
+--
+-- Dumping data for table `placeholder_config`
+--
 
--- 初始化模板类型
-insert into template (name, type, file_path, file_name) values
-                                                            ('本科毕业设计答辩成绩表', 1, '', ''),
-                                                            ('本科毕业设计成绩评定表', 2, '', ''),
-                                                            ('本科毕业论文答辩成绩表', 3, '', ''),
-                                                            ('本科毕业论文成绩评定表', 4, '', ''),
-                                                            ('毕业论文(设计)答辩小组统分表', 5, '', ''),
-                                                            ('毕业论文答辩成绩无评语过程表', 6, '', ''),
-                                                            ('毕业设计答辩成绩无评语过程表', 7, '', '');
+LOCK TABLES `placeholder_config` WRITE;
+/*!40000 ALTER TABLE `placeholder_config` DISABLE KEYS */;
+INSERT INTO `placeholder_config` VALUES (1,1,'{{student_name}}','瀛︾敓濮撳悕',1),(2,1,'{{student_id}}','瀛﹀彿',1),(3,1,'{{date_year}}','骞翠唤',1),(4,1,'{{date_month}}','鏈堜唤',1),(5,1,'{{date_day}}','鏃ユ湡',1),(6,1,'{{thesis_title}}','棰樼洰',1),(7,1,'{{design_quality_score1}}','璁捐璐ㄩ噺鍒?',1),(8,1,'{{design_quality_score2}}','璁捐璐ㄩ噺鍒?',1),(9,1,'{{design_quality_score3}}','璁捐璐ㄩ噺鍒?',1),(10,1,'{{defense_report_score}}','绛旇京鎶ュ憡鍒?,1),(11,1,'{{response_score1}}','鍥炵瓟闂鍒?',1),(12,1,'{{response_score2}}','鍥炵瓟闂鍒?',1),(13,1,'{{total_score}}','鎬绘垚缁?,1),(14,1,'{{signature_judge}}','璇勫绛惧悕',1),(15,2,'{{student_name}}','瀛︾敓濮撳悕',1),(16,2,'{{student_id}}','瀛﹀彿',1),(17,2,'{{date_year}}','骞翠唤',1),(18,2,'{{date_month}}','鏈堜唤',1),(19,2,'{{date_day}}','鏃ユ湡',1),(20,2,'{{thesis_title}}','棰樼洰',1),(21,2,'{{advisor_score}}','鎸囧鑰佸笀鎴愮哗',1),(22,2,'{{reviewer_score}}','璇勯槄浜烘垚缁?,1),(23,2,'{{defense_score}}','绛旇京鎴愮哗',1),(24,2,'{{advisor_calculated}}','鎸囧鑰佸笀鎴愮哗脳0.3',1),(25,2,'{{reviewer_calculated}}','璇勯槄浜烘垚缁┟?.3',1),(26,2,'{{defense_calculated}}','绛旇京鎴愮哗脳0.4',1),(27,2,'{{final_score}}','鏈€缁堟垚缁?,1),(28,2,'{{signature_department_head}}','绯讳富浠荤鍚?,1),(29,3,'{{student_name}}','瀛︾敓濮撳悕',1),(30,3,'{{student_id}}','瀛﹀彿',1),(31,3,'{{date_year}}','骞翠唤',1),(32,3,'{{date_month}}','鏈堜唤',1),(33,3,'{{date_day}}','鏃ユ湡',1),(34,3,'{{thesis_title}}','棰樼洰',1),(35,3,'{{paper_quality_score}}','璁烘枃璐ㄩ噺鍒?,1),(36,3,'{{defense_report_score}}','绛旇京鎶ュ憡鍒?,1),(37,3,'{{response_score}}','鍥炵瓟闂鍒?,1),(38,3,'{{total_score}}','鎬绘垚缁?,1),(39,3,'{{defense_comment}}','绛旇京璇勮',1),(40,3,'{{signature_group_leader}}','缁勯暱绛惧悕',1),(41,4,'{{student_name}}','瀛︾敓濮撳悕',1),(42,4,'{{student_id}}','瀛﹀彿',1),(43,4,'{{date_year}}','骞翠唤',1),(44,4,'{{date_month}}','鏈堜唤',1),(45,4,'{{date_day}}','鏃ユ湡',1),(46,4,'{{thesis_title}}','棰樼洰',1),(47,4,'{{advisor_score}}','鎸囧鑰佸笀鎴愮哗',1),(48,4,'{{reviewer_score}}','璇勯槄浜烘垚缁?,1),(49,4,'{{defense_score}}','绛旇京鎴愮哗',1),(50,4,'{{advisor_calculated}}','鎸囧鑰佸笀鎴愮哗脳0.3',1),(51,4,'{{reviewer_calculated}}','璇勯槄浜烘垚缁┟?.3',1),(52,4,'{{defense_calculated}}','绛旇京鎴愮哗脳0.4',1),(53,4,'{{final_score}}','鏈€缁堟垚缁?,1),(54,4,'{{signature_department_head}}','绯讳富浠荤鍚?,1),(55,5,'{{student_name}}','瀛︾敓濮撳悕',1),(56,5,'{{student_id}}','瀛﹀彿',1),(57,5,'{{date_year}}','骞翠唤',1),(58,5,'{{date_month}}','鏈堜唤',1),(59,5,'{{date_day}}','鏃ユ湡',1),(60,5,'{{thesis_title}}','棰樼洰',1),(61,5,'{{total_score}}','鎬绘垚缁?,1),(62,5,'{{signature_judge}}','璇勫绛惧悕',1),(63,6,'{{student_name}}','瀛︾敓濮撳悕',1),(64,6,'{{student_id}}','瀛﹀彿',1),(65,6,'{{date_year}}','骞翠唤',1),(66,6,'{{date_month}}','鏈堜唤',1),(67,6,'{{date_day}}','鏃ユ湡',1),(68,6,'{{thesis_title}}','棰樼洰',1),(69,6,'{{paper_quality_score}}','璁烘枃璐ㄩ噺鍒?,1),(70,6,'{{defense_report_score}}','绛旇京鎶ュ憡鍒?,1),(71,6,'{{response_score}}','鍥炵瓟闂鍒?,1),(72,6,'{{total_score}}','鎬绘垚缁?,1),(73,6,'{{signature_judge}}','璇勫绛惧悕',1),(74,7,'{{student_name}}','瀛︾敓濮撳悕',1),(75,7,'{{student_id}}','瀛﹀彿',1),(76,7,'{{date_year}}','骞翠唤',1),(77,7,'{{date_month}}','鏈堜唤',1),(78,7,'{{date_day}}','鏃ユ湡',1),(79,7,'{{thesis_title}}','棰樼洰',1),(80,7,'{{design_quality_score1}}','璁捐璐ㄩ噺鍒?',1),(81,7,'{{design_quality_score2}}','璁捐璐ㄩ噺鍒?',1),(82,7,'{{design_quality_score3}}','璁捐璐ㄩ噺鍒?',1),(83,7,'{{defense_report_score}}','绛旇京鎶ュ憡鍒?,1),(84,7,'{{response_score1}}','鍥炵瓟闂鍒?',1),(85,7,'{{response_score2}}','鍥炵瓟闂鍒?',1),(86,7,'{{total_score}}','鎬绘垚缁?,1),(87,7,'{{signature_judge}}','璇勫绛惧悕',1);
+/*!40000 ALTER TABLE `placeholder_config` ENABLE KEYS */;
+UNLOCK TABLES;
 
--- 初始化日期配置
-insert into date_config (config_key, config_value) values
-                                                       ('defense_date', curdate()),
-                                                       ('evaluation_date', curdate());
+--
+-- Table structure for table `student`
+--
 
--- 初始化占位符配置（根据需求文档）
--- 类型1：本科毕业设计答辩成绩表
-insert into placeholder_config (template_type, placeholder_key, placeholder_name) values
-                                                                                      (1, '{{student_name}}', '学生姓名'),
-                                                                                      (1, '{{student_id}}', '学号'),
-                                                                                      (1, '{{date_year}}', '年份'),
-                                                                                      (1, '{{date_month}}', '月份'),
-                                                                                      (1, '{{date_day}}', '日期'),
-                                                                                      (1, '{{thesis_title}}', '题目'),
-                                                                                      (1, '{{design_quality_score1}}', '设计质量分1'),
-                                                                                      (1, '{{design_quality_score2}}', '设计质量分2'),
-                                                                                      (1, '{{design_quality_score3}}', '设计质量分3'),
-                                                                                      (1, '{{defense_report_score}}', '答辩报告分'),
-                                                                                      (1, '{{response_score1}}', '回答问题分1'),
-                                                                                      (1, '{{response_score2}}', '回答问题分2'),
-                                                                                      (1, '{{total_score}}', '总成绩'),
-                                                                                      (1, '{{signature_judge}}', '评委签名');
+DROP TABLE IF EXISTS `student`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `student` (
+  `id` char(10) NOT NULL,
+  `real_name` varchar(20) NOT NULL,
+  `tel` char(11) DEFAULT NULL,
+  `email` varchar(20) DEFAULT NULL,
+  `institute_id` int NOT NULL,
+  PRIMARY KEY (`id`),
+  KEY `fk_institute_id` (`institute_id`),
+  KEY `idx_student_id` (`id`),
+  CONSTRAINT `student_ibfk_1` FOREIGN KEY (`institute_id`) REFERENCES `institute` (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
 
--- 类型2：本科毕业设计成绩评定表
-insert into placeholder_config (template_type, placeholder_key, placeholder_name) values
-                                                                                      (2, '{{student_name}}', '学生姓名'),
-                                                                                      (2, '{{student_id}}', '学号'),
-                                                                                      (2, '{{date_year}}', '年份'),
-                                                                                      (2, '{{date_month}}', '月份'),
-                                                                                      (2, '{{date_day}}', '日期'),
-                                                                                      (2, '{{thesis_title}}', '题目'),
-                                                                                      (2, '{{advisor_score}}', '指导老师成绩'),
-                                                                                      (2, '{{reviewer_score}}', '评阅人成绩'),
-                                                                                      (2, '{{defense_score}}', '答辩成绩'),
-                                                                                      (2, '{{advisor_calculated}}', '指导老师成绩×0.3'),
-                                                                                      (2, '{{reviewer_calculated}}', '评阅人成绩×0.3'),
-                                                                                      (2, '{{defense_calculated}}', '答辩成绩×0.4'),
-                                                                                      (2, '{{final_score}}', '最终成绩'),
-                                                                                      (2, '{{signature_department_head}}', '系主任签名');
+--
+-- Dumping data for table `student`
+--
 
--- 类型3：本科毕业论文答辩成绩表
-insert into placeholder_config (template_type, placeholder_key, placeholder_name) values
-                                                                                      (3, '{{student_name}}', '学生姓名'),
-                                                                                      (3, '{{student_id}}', '学号'),
-                                                                                      (3, '{{date_year}}', '年份'),
-                                                                                      (3, '{{date_month}}', '月份'),
-                                                                                      (3, '{{date_day}}', '日期'),
-                                                                                      (3, '{{thesis_title}}', '题目'),
-                                                                                      (3, '{{paper_quality_score}}', '论文质量分'),
-                                                                                      (3, '{{defense_report_score}}', '答辩报告分'),
-                                                                                      (3, '{{response_score}}', '回答问题分'),
-                                                                                      (3, '{{total_score}}', '总成绩'),
-                                                                                      (3, '{{defense_comment}}', '答辩评语'),
-                                                                                      (3, '{{signature_group_leader}}', '组长签名');
+LOCK TABLES `student` WRITE;
+/*!40000 ALTER TABLE `student` DISABLE KEYS */;
+INSERT INTO `student` VALUES ('2023001','wxy','13800138001','wxy@email.com',1),('2023002','lwx','13800138002','lwx@email.com',1),('2023003','zzh','13800138003','zzh@email.com',1);
+/*!40000 ALTER TABLE `student` ENABLE KEYS */;
+UNLOCK TABLES;
 
--- 类型4：本科毕业论文成绩评定表（同类型2）
-insert into placeholder_config (template_type, placeholder_key, placeholder_name) values
-                                                                                      (4, '{{student_name}}', '学生姓名'),
-                                                                                      (4, '{{student_id}}', '学号'),
-                                                                                      (4, '{{date_year}}', '年份'),
-                                                                                      (4, '{{date_month}}', '月份'),
-                                                                                      (4, '{{date_day}}', '日期'),
-                                                                                      (4, '{{thesis_title}}', '题目'),
-                                                                                      (4, '{{advisor_score}}', '指导老师成绩'),
-                                                                                      (4, '{{reviewer_score}}', '评阅人成绩'),
-                                                                                      (4, '{{defense_score}}', '答辩成绩'),
-                                                                                      (4, '{{advisor_calculated}}', '指导老师成绩×0.3'),
-                                                                                      (4, '{{reviewer_calculated}}', '评阅人成绩×0.3'),
-                                                                                      (4, '{{defense_calculated}}', '答辩成绩×0.4'),
-                                                                                      (4, '{{final_score}}', '最终成绩'),
-                                                                                      (4, '{{signature_department_head}}', '系主任签名');
+--
+-- Table structure for table `tea_group_rel`
+--
 
--- 类型5：毕业论文(设计)答辩小组统分表（通用字段）
-insert into placeholder_config (template_type, placeholder_key, placeholder_name) values
-                                                                                      (5, '{{student_name}}', '学生姓名'),
-                                                                                      (5, '{{student_id}}', '学号'),
-                                                                                      (5, '{{date_year}}', '年份'),
-                                                                                      (5, '{{date_month}}', '月份'),
-                                                                                      (5, '{{date_day}}', '日期'),
-                                                                                      (5, '{{thesis_title}}', '题目'),
-                                                                                      (5, '{{total_score}}', '总成绩'),
-                                                                                      (5, '{{signature_judge}}', '评委签名');
+DROP TABLE IF EXISTS `tea_group_rel`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `tea_group_rel` (
+  `id` int NOT NULL AUTO_INCREMENT,
+  `teacher_id` char(10) NOT NULL,
+  `group_id` int NOT NULL,
+  `is_defense_leader` tinyint(1) DEFAULT '0',
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `uk_teacher_group` (`teacher_id`,`group_id`),
+  KEY `group_id` (`group_id`),
+  CONSTRAINT `tea_group_rel_ibfk_1` FOREIGN KEY (`teacher_id`) REFERENCES `user` (`id`),
+  CONSTRAINT `tea_group_rel_ibfk_2` FOREIGN KEY (`group_id`) REFERENCES `dbgroup` (`id`)
+) ENGINE=InnoDB AUTO_INCREMENT=5 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
 
--- 类型6：毕业论文答辩成绩无评语过程表
-insert into placeholder_config (template_type, placeholder_key, placeholder_name) values
-                                                                                      (6, '{{student_name}}', '学生姓名'),
-                                                                                      (6, '{{student_id}}', '学号'),
-                                                                                      (6, '{{date_year}}', '年份'),
-                                                                                      (6, '{{date_month}}', '月份'),
-                                                                                      (6, '{{date_day}}', '日期'),
-                                                                                      (6, '{{thesis_title}}', '题目'),
-                                                                                      (6, '{{paper_quality_score}}', '论文质量分'),
-                                                                                      (6, '{{defense_report_score}}', '答辩报告分'),
-                                                                                      (6, '{{response_score}}', '回答问题分'),
-                                                                                      (6, '{{total_score}}', '总成绩'),
-                                                                                      (6, '{{signature_judge}}', '评委签名');
+--
+-- Dumping data for table `tea_group_rel`
+--
 
--- 类型7：毕业设计答辩成绩无评语过程表（同类型1）
-insert into placeholder_config (template_type, placeholder_key, placeholder_name) values
-                                                                                      (7, '{{student_name}}', '学生姓名'),
-                                                                                      (7, '{{student_id}}', '学号'),
-                                                                                      (7, '{{date_year}}', '年份'),
-                                                                                      (7, '{{date_month}}', '月份'),
-                                                                                      (7, '{{date_day}}', '日期'),
-                                                                                      (7, '{{thesis_title}}', '题目'),
-                                                                                      (7, '{{design_quality_score1}}', '设计质量分1'),
-                                                                                      (7, '{{design_quality_score2}}', '设计质量分2'),
-                                                                                      (7, '{{design_quality_score3}}', '设计质量分3'),
-                                                                                      (7, '{{defense_report_score}}', '答辩报告分'),
-                                                                                      (7, '{{response_score1}}', '回答问题分1'),
-                                                                                      (7, '{{response_score2}}', '回答问题分2'),
-                                                                                      (7, '{{total_score}}', '总成绩'),
-                                                                                      (7, '{{signature_judge}}', '评委签名');
--- 学生2023001（wxy）的毕业设计答辩信息
-insert into dbinfo (gid, stu_id, type, title, time, summary, reviewer_id) values
-    (1, '2023001', 1, '基于springboot的在线教育平台设计与实现', '2023-05-20',
-     '本毕业设计基于springboot框架开发了一个在线教育平台，实现了课程管理、在线学习、考试系统等功能。', '100002');
+LOCK TABLES `tea_group_rel` WRITE;
+/*!40000 ALTER TABLE `tea_group_rel` DISABLE KEYS */;
+INSERT INTO `tea_group_rel` VALUES (1,'100001',1,1),(2,'100002',1,0),(3,'100003',1,0),(4,'100004',1,0);
+/*!40000 ALTER TABLE `tea_group_rel` ENABLE KEYS */;
+UNLOCK TABLES;
 
--- 学生2023002（lwx）的毕业论文答辩信息
-insert into dbinfo (gid, stu_id, type, title, time, summary, reviewer_id) values
-    (1, '2023002', 2, '人工智能在智能客服系统中的关键技术研究与应用', '2023-05-20',
-     '本毕业论文研究了人工智能技术在智能客服系统中的应用，重点探讨了自然语言处理和机器学习算法。', '100002');
+--
+-- Table structure for table `tea_stu_rel`
+--
 
--- 对于毕业设计类型（type=1）
-UPDATE dbinfo
-SET teacher_scores = '[
-  {
-    "teacher_id": "100002",
-    "teacher_name": "李老师",
-    "design_quality1": 13,
-    "design_quality2": 13,
-    "design_quality3": 13,
-    "design_presentation": 22,
-    "design_qa1": 13,
-    "design_qa2": 13,
-    "total_score": 86
-  },
-  {
-    "teacher_id": "100003",
-    "teacher_name": "王老师",
-    "design_quality1": 14,
-    "design_quality2": 14,
-    "design_quality3": 13,
-    "design_presentation": 22,
-    "design_qa1": 13,
-    "design_qa2": 13,
-    "total_score": 89
-  },
-  {
-    "teacher_id": "100004",
-    "teacher_name": "赵老师",
-    "design_quality1": 13,
-    "design_quality2": 13,
-    "design_quality3": 12,
-    "design_presentation": 22,
-    "design_qa1": 12,
-    "design_qa2": 12,
-    "total_score": 84
-  }
-]',
-    total_score = 86,
-    graded_by = '100001'
-WHERE stu_id = '2023001' AND gid = 1;
+DROP TABLE IF EXISTS `tea_stu_rel`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `tea_stu_rel` (
+  `tea_id` char(10) DEFAULT NULL,
+  `stu_id` char(10) DEFAULT NULL,
+  `year` int DEFAULT NULL,
+  UNIQUE KEY `tea_id` (`tea_id`,`stu_id`),
+  KEY `fk_stu_id` (`stu_id`),
+  CONSTRAINT `tea_stu_rel_ibfk_1` FOREIGN KEY (`tea_id`) REFERENCES `user` (`id`),
+  CONSTRAINT `tea_stu_rel_ibfk_2` FOREIGN KEY (`stu_id`) REFERENCES `student` (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
 
--- 对于毕业论文类型（type=2）
-UPDATE dbinfo
-SET teacher_scores = '[
-  {
-    "teacher_id": "100002",
-    "teacher_name": "李老师",
-    "paper_quality": 45,
-    "presentation": 25,
-    "qa_performance": 30,
-    "total_score": 100
-  },
-  {
-    "teacher_id": "100003",
-    "teacher_name": "王老师",
-    "paper_quality": 43,
-    "presentation": 28,
-    "qa_performance": 29,
-    "total_score": 100
-  },
-  {
-    "teacher_id": "100004",
-    "teacher_name": "赵老师",
-    "paper_quality": 40,
-    "presentation": 25,
-    "qa_performance": 28,
-    "total_score": 93
-  }
-]',
-    total_score = 98,
-    graded_by = '100001'
-WHERE stu_id = '2023002' AND gid = 1;
-ALTER TABLE user_inst_rel ADD UNIQUE INDEX uk_user_inst (user_id, inst_id);
+--
+-- Dumping data for table `tea_stu_rel`
+--
+
+LOCK TABLES `tea_stu_rel` WRITE;
+/*!40000 ALTER TABLE `tea_stu_rel` DISABLE KEYS */;
+INSERT INTO `tea_stu_rel` VALUES ('100001','2023001',2026),('100001','2023002',2026),('100001','2023003',2026);
+/*!40000 ALTER TABLE `tea_stu_rel` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Table structure for table `template`
+--
+
+DROP TABLE IF EXISTS `template`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `template` (
+  `id` int NOT NULL AUTO_INCREMENT,
+  `name` varchar(100) NOT NULL,
+  `type` int NOT NULL,
+  `file_path` varchar(500) NOT NULL,
+  `file_name` varchar(255) NOT NULL,
+  `file_size` bigint DEFAULT NULL,
+  `updated_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  `updated_by` varchar(50) DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `uk_template_type` (`type`)
+) ENGINE=InnoDB AUTO_INCREMENT=8 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `template`
+--
+
+LOCK TABLES `template` WRITE;
+/*!40000 ALTER TABLE `template` DISABLE KEYS */;
+INSERT INTO `template` VALUES (1,'鏈姣曚笟璁捐绛旇京鎴愮哗琛?,1,'','',NULL,'2026-01-05 12:36:43',NULL),(2,'鏈姣曚笟璁捐鎴愮哗璇勫畾琛?,2,'','',NULL,'2026-01-05 12:36:43',NULL),(3,'鏈姣曚笟璁烘枃绛旇京鎴愮哗琛?,3,'','',NULL,'2026-01-05 12:36:43',NULL),(4,'鏈姣曚笟璁烘枃鎴愮哗璇勫畾琛?,4,'','',NULL,'2026-01-05 12:36:43',NULL),(5,'姣曚笟璁烘枃(璁捐)绛旇京灏忕粍缁熷垎琛?,5,'','',NULL,'2026-01-05 12:36:43',NULL),(6,'姣曚笟璁烘枃绛旇京鎴愮哗鏃犺瘎璇繃绋嬭〃',6,'','',NULL,'2026-01-05 12:36:43',NULL),(7,'姣曚笟璁捐绛旇京鎴愮哗鏃犺瘎璇繃绋嬭〃',7,'','',NULL,'2026-01-05 12:36:43',NULL);
+/*!40000 ALTER TABLE `template` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Table structure for table `user`
+--
+
+DROP TABLE IF EXISTS `user`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `user` (
+  `id` char(10) NOT NULL,
+  `pwd` varchar(30) NOT NULL,
+  `role` int NOT NULL,
+  `real_name` varchar(20) NOT NULL,
+  `phone` char(11) DEFAULT NULL,
+  `email` varchar(32) DEFAULT NULL,
+  `signaturePath` varchar(100) DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  KEY `idx_user_id` (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `user`
+--
+
+LOCK TABLES `user` WRITE;
+/*!40000 ALTER TABLE `user` DISABLE KEYS */;
+INSERT INTO `user` VALUES ('100001','123456',2,'寮犺€佸笀','13800138001','zhang@example.com',NULL),('100002','123456',2,'鏉庤€佸笀','13800138002','li@example.com',NULL),('100003','123456',2,'鐜嬭€佸笀','13800138003','wang@example.com',NULL),('100004','123456',2,'璧佃€佸笀','13800138004','zhao@example.com',NULL),('123123','123456',2,'jj3',NULL,NULL,NULL),('123456','123456',2,'jj4',NULL,NULL,NULL),('aaaa','123456',1,'aaaa',NULL,NULL,NULL),('admin','123456',0,'jj1',NULL,NULL,NULL),('inst','123456',1,'jj2',NULL,NULL,NULL);
+/*!40000 ALTER TABLE `user` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Table structure for table `user_inst_rel`
+--
+
+DROP TABLE IF EXISTS `user_inst_rel`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `user_inst_rel` (
+  `user_id` char(10) DEFAULT NULL,
+  `inst_id` int DEFAULT NULL,
+  UNIQUE KEY `uk_user_inst` (`user_id`,`inst_id`),
+  KEY `uk_inst_id` (`inst_id`),
+  CONSTRAINT `user_inst_rel_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `user` (`id`),
+  CONSTRAINT `user_inst_rel_ibfk_2` FOREIGN KEY (`inst_id`) REFERENCES `institute` (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `user_inst_rel`
+--
+
+LOCK TABLES `user_inst_rel` WRITE;
+/*!40000 ALTER TABLE `user_inst_rel` DISABLE KEYS */;
+INSERT INTO `user_inst_rel` VALUES ('100001',1),('100002',1),('100003',1),('100004',1),('aaaa',1),('inst',1);
+/*!40000 ALTER TABLE `user_inst_rel` ENABLE KEYS */;
+UNLOCK TABLES;
+/*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
+
+/*!40101 SET SQL_MODE=@OLD_SQL_MODE */;
+/*!40014 SET FOREIGN_KEY_CHECKS=@OLD_FOREIGN_KEY_CHECKS */;
+/*!40014 SET UNIQUE_CHECKS=@OLD_UNIQUE_CHECKS */;
+/*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
+/*!40101 SET CHARACTER_SET_RESULTS=@OLD_CHARACTER_SET_RESULTS */;
+/*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
+/*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
+
+-- Dump completed on 2026-06-25 16:16:47

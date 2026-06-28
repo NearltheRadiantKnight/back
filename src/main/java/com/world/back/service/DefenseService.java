@@ -14,9 +14,15 @@ public interface DefenseService
 
     List<Map<String, Object>> yearAll();
 
+    List<Map<String, Object>> yearInstituteSummary();
+
     Integer getCountByYear(Integer year);
 
+    Integer getCountByYearAndInstitute(Integer year, Integer instituteId);
+
     Integer getStudentCountByYear(Integer year);
+
+    Integer getStudentCountByYearAndInstitute(Integer year, Integer instituteId);
 
     List<Map<String, Object>> getGroupFirstStudents(Integer year);
 

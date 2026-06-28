@@ -160,7 +160,11 @@ public class AdminController {
     {
         try {
             String id = data.get("id").toString();
-            return Result.success(userService.resetPassword(id));
+            Boolean reset = userService.resetPassword(id);
+            if (reset) {
+                return Result.success(true);
+            }
+            return Result.error("重置密码失败");
         } catch (Exception e) {
             return Result.error("重置密码失败: " + e.getMessage());
         }

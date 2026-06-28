@@ -31,15 +31,29 @@ public class DefenseController
     }
     
     @GetMapping("/allyear")
-    public Result<List<Map<String, Object>>> yearAll()
+    public Result<List<Map<String, Object>>> yearAll(
+            @RequestParam(value = "instituteId", required = false) Integer instituteId)
     {
         List<Map<String, Object>> res = defenseService.yearAll();
         for (Map<String, Object> map : res) {
-            map.put("groupCount", defenseService.getCountByYear((Integer)map.get("year")));
-            map.put("defenseCount", defenseService.getStudentCountByYear((Integer)map.get("year")));
+            Integer year = (Integer) map.get("year");
+            if (instituteId != null && instituteId > 0) {
+                map.put("groupCount", defenseService.getCountByYearAndInstitute(year, instituteId));
+                map.put("defenseCount", defenseService.getStudentCountByYearAndInstitute(year, instituteId));
+            } else {
+                map.put("groupCount", defenseService.getCountByYear(year));
+                map.put("defenseCount", defenseService.getStudentCountByYear(year));
+            }
         }
         return Result.success(res);
     }
+
+    @GetMapping("/year-institute-summary")
+    public Result<List<Map<String, Object>>> yearInstituteSummary()
+    {
+        return Result.success(defenseService.yearInstituteSummary());
+    }
+
     @PostMapping("/save-score")
     public Result<Boolean> saveScore(@RequestBody Map<String, Object> map)
     {

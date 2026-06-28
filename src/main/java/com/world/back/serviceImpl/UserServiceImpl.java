@@ -299,8 +299,7 @@ public class UserServiceImpl implements UserService
   @Override
   public Boolean resetPassword(String id) {
     try {
-      userMapper.updatePassword(id, "123456");
-      return true;
+      return userMapper.updatePassword(id, "123456") > 0;
     }catch (Exception e) {
       return false;
     }
