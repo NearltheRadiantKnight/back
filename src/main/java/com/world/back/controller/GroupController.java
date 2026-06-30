@@ -1,11 +1,9 @@
 package com.world.back.controller;
 
-import com.world.back.entity.Student;
 import com.world.back.entity.res.Group;
 import com.world.back.entity.res.Result;
 import com.world.back.service.InstituteService;
 import com.world.back.service.StudentService;
-import com.world.back.serviceImpl.DefenseServiceImpl;
 import com.world.back.serviceImpl.GroupServiceImpl;
 import com.world.back.serviceImpl.TeacherServiceImpl;
 import com.world.back.serviceImpl.UserServiceImpl;
@@ -93,7 +91,7 @@ public class GroupController
         List<Map<String, Object>> res = groupService.getMember(group_id);
         for (Map<String, Object> map : res) {
             map.put("instituteName", instituteService.getInstituteNameById((Integer) map.get("instituteId")));
-            map.put("teacherName", userService.getNameById(studentService.getTeacherById((String) map.get("stu_id"))));;
+            map.put("teacherName", userService.getNameById(studentService.getTeacherById((String) map.get("stu_id"))));
         }
         return Result.success(res);
     }
@@ -111,5 +109,20 @@ public class GroupController
         String student_id = (String)map.get("student_id");
         groupService.deleteFromGroup(group_id, student_id);
         return Result.success(true);
+    }
+
+    @GetMapping("/search")
+    public Result<List<Map<String, Object>>> searchGroups(
+            @RequestParam(value = "year", required = false) Integer year,
+            @RequestParam(value = "adminId", required = false) String adminId,
+            @RequestParam(value = "keyword", required = false) String keyword,
+            @RequestParam(value = "instituteId", required = false) Integer instituteId)
+    {
+        try {
+            List<Map<String, Object>> groups = groupService.searchGroups(year, adminId, keyword, instituteId);
+            return Result.success(groups);
+        } catch (Exception e) {
+            return Result.error("查询答辩组失败: " + e.getMessage());
+        }
     }
 }

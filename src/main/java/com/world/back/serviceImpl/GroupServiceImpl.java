@@ -89,4 +89,15 @@ public class GroupServiceImpl implements GroupService
     {
         groupMapper.deleteFromGroup(group_id, student_id);
     }
+
+    @Override
+    public List<Map<String, Object>> searchGroups(Integer year, String adminId, String keyword, Integer instituteId)
+    {
+        List<Map<String, Object>> groups = groupMapper.searchGroups(year, adminId, keyword, instituteId);
+        for (Map<String, Object> group : groups) {
+            Integer gid = (Integer) group.get("id");
+            group.put("student_count", groupMapper.getMember(gid).size());
+        }
+        return groups;
+    }
 }

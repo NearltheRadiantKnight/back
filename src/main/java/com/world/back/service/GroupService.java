@@ -1,6 +1,5 @@
 package com.world.back.service;
 
-import com.world.back.entity.Student;
 import com.world.back.entity.res.Group;
 import org.springframework.stereotype.Service;
 
@@ -27,4 +26,6 @@ public interface GroupService
     List<Map<String, Object>> getMember(Integer group_id);
     
     void deleteFromGroup(Integer group_id, String student_id);
+
+    List<Map<String, Object>> searchGroups(Integer year, String adminId, String keyword, Integer instituteId);
 }

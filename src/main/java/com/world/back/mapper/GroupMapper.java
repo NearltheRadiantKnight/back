@@ -1,6 +1,5 @@
 package com.world.back.mapper;
 
-import com.world.back.entity.Student;
 import com.world.back.entity.res.Group;
 import org.apache.ibatis.annotations.*;
 
@@ -55,4 +54,24 @@ public interface GroupMapper
     
     @Delete("delete from dbinfo where gid=#{group_id} and stu_id=#{student_id}")
     void deleteFromGroup(@Param("group_id") Integer group_id, @Param("student_id") String student_id);
+
+    @Select({"<script>",
+            "select g.*, u.real_name as realName",
+            "from dbgroup g",
+            "left join user u on g.admin_id = u.id",
+            "where g.admin_id != 'admin'",
+            "<if test='year != null'> and g.year = #{year} </if>",
+             "<if test='adminId != null and adminId != \"\"'> and g.admin_id = #{adminId} </if>",
+            "<if test='keyword != null and keyword != \"\"'>",
+            "  and u.real_name like concat('%',#{keyword},'%')",
+            "</if>",
+            "<if test='instituteId != null'>",
+            "  and g.id in (select tgr.group_id from tea_group_rel tgr join user_inst_rel uir on tgr.teacher_id = uir.user_id where uir.inst_id = #{instituteId})",
+            "</if>",
+            "order by g.id",
+            "</script>"})
+    List<Map<String, Object>> searchGroups(@Param("year") Integer year,
+                                           @Param("adminId") String adminId,
+                                           @Param("keyword") String keyword,
+                                           @Param("instituteId") Integer instituteId);
 }
